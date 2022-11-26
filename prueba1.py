@@ -30,8 +30,8 @@ def docx_replace_regex(doc_obj, regex , replace):
                 docx_replace_regex(cell, regex , replace)
 filename = "1.docx"
 
-regex1 = re.compile(r"caballería")
-replace1 = r"Python34, "
+regex1 = re.compile(r'popular')
+replace1 = r'popular '
 
 #regex2 = re.compile(r"KBQ648E")
 #replace2 = r"KLM789J"
