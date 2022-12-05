@@ -1,8 +1,19 @@
-import docx
-import random
+
+
+from cgi import print_arguments
 from random import sample
+# Libreria Regex para insertar valores en docx
 import re
-from docx import Document
+# Libreria Python-docx para manipular archivos .docx
+import docx
+#from docx import Document
+# Libreria para convertir Pdf
+import subprocess
+import PyPDF2
+
+
+
+
 
 
 # Funcion para modificar el archivos .docx
@@ -25,7 +36,7 @@ def docx_replace_regex2(doc_obj, regex , replace):
         inline = p.runs
         # Loop added to work with runs (strings with same style)
         for i in range(len(inline)):
-            if regex.search(inline[i].text):
+            ##if regex.search(inline[i].text):
                 text = regex.sub(replace, inline[i].text)
                 inline[i].text = text
     
@@ -36,7 +47,9 @@ def getText(filename):
     fullText = []
     for para in doc.paragraphs:
         fullText.append(para.text)
-    return '\n'.join(fullText)
+    x = '\n'.join(fullText)
+    return x
+    #return '\n'.join(fullText)
 
 # Nro 1
 # Funcion para obtener los parrafos independientes 
@@ -48,13 +61,16 @@ def getParrafo(filename):
         parrafo.append(doc.paragraphs[y].text)
     return parrafo  
   
+
 # Nro 2
 # Funcion para separar las palabras del parrafo
 def getPalabras(listado):
     lista = []
     for parrafo in listado:
         lista.append(parrafo.split(sep=' '))
+    #print(lista)
     return lista
+
 
 # Nro 3
 # Funcion para seleccionar todas las palabras con mas de 5 letras
@@ -76,13 +92,32 @@ def getUnicos(listado):
         nueva_lista = []
         for elemento in lista:
 # Este if verifica que el listado no tenga los siguientes carácteres ( ó ) ó ""
-            if elemento.find(")") == -1 and elemento.find("(") == -1 and elemento.find('"')== -1:
+            if elemento.find(")") == -1 and elemento.find("(") == -1 and elemento.find('"')== -1 and elemento.find("á") == -1 and elemento.find("é") == -1 and elemento.find("í") == -1 and elemento.find("ó") == -1 and elemento.find("ú") == -1 and elemento.find("ñ") == -1:
             # Verificamos que no existan repetidos en lista
-                if not elemento in nueva_lista:
-                    nueva_lista.append(elemento)
-        listas.append(nueva_lista)
+                #if not elemento in nueva_lista:
+                nueva_lista.append(elemento)
+        
+        nueva_listas = getEliminarRepetidos(nueva_lista)            
+        listas.append(nueva_listas)
     return listas
 
+# Funcion para encontrar repetidos y eliminarlos
+def getEliminarRepetidos(lista):
+    nueva = lista
+    dobles = set()
+    #print(len(lista))
+    #print(lista)
+    #print("***********************")
+    duplicados = list({x for x in nueva if x in dobles or (dobles.add(x) or False)})
+   
+    nueva = list(dict.fromkeys(lista))
+    #nueva = list(nueva)
+    for i in duplicados:
+            nueva.remove(i)
+    #print(len(nueva))
+    #print(nueva)
+    return nueva
+    
 
 # Nro 5
 # Funcion para selecionar las palabras
@@ -92,9 +127,17 @@ def getSeleccion(listas):
         seleccion = []
         if len(listado) >= 6:
             valor = sorted(sample(range(0 , len(listado)-1),3))
+            #print(valor)
             for i in range(3):
                 seleccion.append(listado[valor[i]])
         lista_seleccion.append(seleccion)
+    c = int(len(lista_seleccion))
+    lista_selecciones = []
+    for x in range(c):
+        if len(lista_seleccion[x]) == 3:
+            lista_selecciones.append(lista_seleccion[x])
+    
+    print(lista_seleccion)
     return lista_seleccion
 
 # Nro 6
@@ -106,17 +149,45 @@ def getMarca(lista_palabras, doc):
                 regex1 = re.compile(lista_palabras[z][i])
                 nuevo = lista_palabras[z][i] + ' '
                 docx_replace_regex2(doc.paragraphs[z], regex1 , nuevo)
-    doc.save('7.docx')
-                
+    getListTxt(lista_palabras)
+    doc.save('10.docx')
+    getPDF('10.docx')
+    return None
+
+# Funcion para convertir .docx a .pdf
+def getPDF(filename):
+    subprocess.run(["lowriter", "--convert-to", "pdf", filename])
+    #pdfFileObj = open(filename[:-5]+'.pdf', 'rb')
+    #pdfReader = PyPDF2.PdfFileReader(pdfFileObj)
+    #pageObj = pdfReader.getPage(0)
+    #print(pageObj.extractText())
+    #print()
+    #subprocess.run(["rm", filename[:-5] +".pdf"])
+    return None
+# Funcion guardar en un txt
+def getListTxt(lista):
+    txt = open("test1.txt", "w")
+    txt.write(str(lista))
+    txt.close()
+    return txt
+
 
 doc = docx.Document('1.docx')
+
+
+#print(f=getText('1.docx'))
+#print(f[0:30])
+#print(dir(doc))
+#getSeccion('1.docx')
+#print(x)
 w  = getParrafo('1.docx') 
 p = getPalabras(w)
+
 #print(p)
 l = getMayoresCinco(p)
 u = getUnicos(l)     
 o = getSeleccion(u)  
-print(o) 
+
 
 #print(getMayoresCinco(p))
 #print(getSeleccion(l))
@@ -125,18 +196,3 @@ print(o)
 #filename = '1.docx'
 #doc = Document(filename)
 getMarca(o,doc)
-
-""" 
-
-print(regex1)
-print(p)
-print(l)
-print(q)
-print(len(l))
-print(len(q))
-print(o)
-
-"""
-
-
-
